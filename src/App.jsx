@@ -11,7 +11,7 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const videoData = await axios.post("http://localhost:3000/download", {
+    const videoData = await axios.post("https://youtube-video-downloader-backend-hw3w.onrender.com/download", {
       url: url,
     });
     setData(videoData.data);
