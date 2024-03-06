@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Volume2, VolumeX } from "lucide-react";
 import "./App.css";
@@ -7,16 +7,35 @@ function App() {
   const [url, setUrl] = useState("");
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const effectHasRunRef = useRef(false);
+
+  useEffect(()=>{
+    if(!effectHasRunRef.current){
+      axios.get("https://youtube-video-downloader-backend-hw3w.onrender.com").then((res)=>{
+      console.log(res.data);
+    })
+
+    effectHasRunRef.current = true
+    }
+    
+  },[])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const videoData = await axios.post("https://youtube-video-downloader-backend-hw3w.onrender.com/download", {
-      url: url,
-    });
-    setData(videoData.data);
-    console.log(data);
-    setLoading(false);
+    try{
+      const videoData = await axios.post("https://youtube-video-downloader-backend-hw3w.onrender.com/download", {
+        url: url,
+      });
+      setData(videoData.data);
+    }
+    catch(err){
+      setShowWarning(true)
+    }
+    finally{
+      setLoading(false);
+    } 
   };
 
   return (
@@ -31,11 +50,13 @@ function App() {
           type="text"
           value={url}
           placeholder="Enter URL"
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => {setUrl(e.target.value);setShowWarning(false)}}
         />
+        {showWarning===true && <p className="warning">Link is not valid.</p>}
         <button type="submit">Download</button>
       </form>
 
+      {data.url &&
       <div className="video">
         <iframe
           src={data.url}
@@ -88,6 +109,7 @@ function App() {
           </table>
         )}
       </div>
+      }
     </div>
   );
 }
